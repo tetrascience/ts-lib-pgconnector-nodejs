@@ -1,0 +1,9 @@
+{
+  "extends": "tetrascience",
+  // TODO: add this to eslint-config-tetrascience
+  "rules": {
+    "no-continue": 0,
+    "no-underscore-dangle": 0,
+    "strict": 0
+  }
+}

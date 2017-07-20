@@ -22,7 +22,7 @@ The `ts-pgconnector` module internally uses [`kibbutz`](https://www.npmjs.com/pa
 First, add `ts-pgconnector` to your package.json's `dependencies`:
 
 ```sh
-$ npm install tetrascience/ts-lib-pgconnector-node
+$ npm install tetrascience/ts-lib-pgconnector-nodejs
 ```
 
 Then create a configuration file that defines your database connections and repository mappings:
@@ -125,7 +125,7 @@ This module is built with the following goals in mind:
 
 2. Ensure that a single connection pool is created for multiple repositories connecting to the same database, and avoid connection exhaustion at the database.
 
-3. Provide a mechanism to handle the asynchronous loading of configuration from potentially multiple sources.  This hook allows implementers to ensure that configuration is fully loaded before the application server is started.
+3. Provide a mechanism to handle the asynchronous loading of configuration from potentially multiple sources (example: environment variables + static configuration + Vault).  This hook allows implementers to ensure that configuration is fully loaded before the application server is started.
 
 ## API
 
@@ -239,6 +239,6 @@ The instance of `Pgconnector`.
 
   - `conf`: the fully merged configuration object.
 
-* `error`: emitted when an error occurs during while loading configuration, or opening a connection.  Listener parameters:
+* `error`: emitted when an uncauth error occurs during while loading configuration, or opening a connection.  Listener parameters:
 
   - `err`: the error that occured.

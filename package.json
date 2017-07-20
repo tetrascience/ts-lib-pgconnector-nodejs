@@ -4,14 +4,14 @@
   "description": "PostgreSQL connection pool configuration and management.",
   "version": "1.0.0",
   "dependencies": {
+    "bluebird": "^3.5.0",
     "elv": "^1.0.0",
     "kibbutz": "^1.1.0",
-    "lodash": "^4.17.4",
     "pg": "^7.0.0"
   },
   "devDependencies": {
     "chai": "^4.0.2",
-    "eslint": "^4.2.0",
+    "eslint": "^3.19.0",
     "eslint-config-tetrascience": "tetrascience/eslint-config-tetrascience",
     "mocha": "^3.4.2",
     "nyc": "^11.0.3"

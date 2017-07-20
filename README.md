@@ -221,7 +221,7 @@ Subscribes a listener to an event.
 
 __Parameters__
 
-* `eventName`: _(required)_ a string identifying the event to which you are subscribing.  Possible values are:
+* `eventName`: _(required)_ a string identifying the event to which you are subscribing.  [See below](#events) for valid event names.
 
 * `listener`: _(required)_ a function to be called when the subscribed event occurs.
 

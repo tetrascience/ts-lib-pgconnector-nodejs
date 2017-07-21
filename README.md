@@ -13,7 +13,7 @@ __Table of Contents__
 
 The `ts-pgconnector` module internally uses [`kibbutz`](https://www.npmjs.com/package/kibbutz) for configuration loading and aggregation (this allows you to load configuration from potentially multiple sources).  When all configuration is loaded and aggregated, the resulting object must have the following schema:
 
-* `databases`: _(required)_ an object that contains a map of PostgreSQL configuration information.  Each key in the `databases` object coresponds to the a single database connection.  Each value must be an object that matches the `pg` module's [`Pool` class' configuration object](https://node-postgres.com/features/pooling).
+* `databases`: _(required)_ an object that contains a map of PostgreSQL configuration information.  Each key in the `databases` object coresponds to the a single database connection.  Each value must be an object that matches the `pg` module's [`Pool` class' configuration object](https://node-postgres.com/features/connecting).
 
 * `repositories`: _(required)_ an object whose keys semantically align to the repositories in the project.  Each repository key's value is a string that maps to a key found in `databases`.
 
@@ -92,22 +92,17 @@ class UsersRepository {
   }
 
   findOne(id) {
+    let client;
     this._connector.connect(this.name)
-      .then((client) => {
-        return [
-          client,
-          client.query('SELECT * FROM users WHERE id = $1', [id]),
-        ];
+      .then((result) => {
+        client = result;
+        return client.query('SELECT * FROM users WHERE id = $1', [id]);
       })
       .then((result) => {
-        const client = result[0];
-        const rows = result[1];
-
-        // release the client back into the pool
-        client.release();
-
-        // turn the result into a POJO representing a user
-        return this._mapResult(rows);
+        return this._mapResult(result);
+      })
+      .finally(() => {
+        if (elv(client)) client.release();
       });
   }
 }
@@ -116,6 +111,8 @@ class UsersRepository {
 ## Repositories
 
 The idea of creating "repositories" in your app is to compartmentalize all of the concerns around storing and querying data for a single model in a single app.  Repositories function as a service that provides access to an underlying data store.  This ensures that model code and persistence code are completely decoupled.  Repositories should never leak internal implementation details, and injest and receive basic identifiers and Plain Old JavaScript Objects (POJOs).
+
+In the event that you have a need to return objects that join across entities, it is recommended you treat this new object as its own model, and create a new repository.
 
 ## Motivation
 

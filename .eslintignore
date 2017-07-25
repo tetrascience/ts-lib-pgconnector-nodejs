@@ -1,0 +1,8 @@
+coverage
+node_modules
+submodules
+.nyc_output
+*.md
+*.yml
+*.log
+*.json

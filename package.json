@@ -2,7 +2,7 @@
   "name": "ts-pgconnector",
   "longName": "ts-pgconnector",
   "description": "PostgreSQL connection pool configuration and management.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "dependencies": {
     "bluebird": "^3.5.0",
     "elv": "^1.0.0",

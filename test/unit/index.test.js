@@ -83,6 +83,20 @@ describe('Connector', () => {
       });
     });
 
+    it('should not throw if pgLib null', function() {
+      assert.doesNotThrow(() => {
+        const connector = new Connector(null);
+        assert.isOk(connector);
+      });
+    });
+
+    it('should not throw if pgLib undefined', function() {
+      assert.doesNotThrow(() => {
+        const connector = new Connector(undefined);
+        assert.isOk(connector);
+      });
+    });
+
     it('should use provided lib\'s Pool when creating connections', function() {
       let called = false;
       const Pool = function() { called = true; };
@@ -100,6 +114,20 @@ describe('Connector', () => {
       });
 
       assert.isTrue(called);
+    });
+
+    it('should throw if options not POJO', function() {
+      assert.throws(() => {
+        const connector = new Connector(null, 42);
+        assert.isNotOk(connector);
+      }, TypeError);
+    });
+
+    it('should throw if options.dispose not Boolean', function() {
+      assert.throws(() => {
+        const connector = new Connector(null, { dispose: 42 });
+        assert.isNotOk(connector);
+      }, TypeError);
     });
   });
 
@@ -566,6 +594,47 @@ describe('Connector', () => {
       } catch (err) {
         done(err);
       }
+    });
+
+    it('should call client.reject() when auto-disposing', function(done) {
+      let released = false;
+
+      const client = {
+        release: () => { released = true; },
+      };
+
+      /* eslint-disable class-methods-use-this */
+      class DisposerPool {
+        connect(callback) {
+          setImmediate(callback, null, client);
+        }
+      }
+      /* eslint-enable class-methods-use-this */
+
+      const connector = new Connector(
+        { Pool: DisposerPool },
+        { dispose: true }
+      );
+
+      connector.add(
+        {
+          databases: {
+            primary: { host: '127.0.0.1' },
+          },
+          repositories: {
+            test: 'primary',
+          },
+        }
+      );
+
+      Bluebird.using(connector.connect('test'), () => 42)
+        .then(() => {
+          assert.isTrue(released);
+          done();
+        })
+        .catch((err) => {
+          done(err);
+        });
     });
   });
 

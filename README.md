@@ -93,7 +93,7 @@ class UsersRepository {
 
   findOne(id) {
     let client;
-    this._connector.connect(this.name)
+    return this._connector.connect(this.name)
       .then((result) => {
         client = result;
         return client.query('SELECT * FROM users WHERE id = $1', [id]);
@@ -104,6 +104,44 @@ class UsersRepository {
       .finally(() => {
         if (elv(client)) client.release();
       });
+  }
+}
+```
+
+### Using Auto-dispose
+
+Alternatively, you can leverage Bluebird's `using()` method to automatically dispose the `Client` instance resolved when calling `connect()`.
+
+This functionality must be enabled when creating your instance of `Pgconnector`:
+
+```js
+const Pgconnector = require('ts-pgconnector');
+
+Pgconnector.shared = new Pgconnector(null, { dispose: true });
+```
+
+Your repository code would then look like this:
+
+```js
+const elv = require('elv');
+const Pgconnector = require('ts-pgconnector');
+const { using } = require('bluebird');
+
+class UsersRepository {
+  constructor(connector) {
+    this._connector = elv.coalesce(connector, Pgconnector.shared);
+    this.name = 'users'
+  }
+
+  findOne(id) {
+    const finder = (client) => {
+      return client.query('SELECT * FROM users WHERE id = $1', [id])
+        .then((result) => {
+          return this._mapResult(result);
+        });
+    };
+
+    return using(this._connector.connect(this.name), finder);
   }
 }
 ```
@@ -135,6 +173,10 @@ The constructor for the `Pgconnector` class.
 __Parameters__
 
 * `pgLib`: _(optional)_ a reference to the `pg` library to use within the `Pgconnector` class.  This provides a method of injecting a library for the purpose of unit testing.
+
+* `options`: _(optional)_ an object that specifies settings to control the internal behavior of the `Pgconnector` class.  This object can have the properties:
+
+  - `dispose`: tells `Pgconnector.prototype.connect()` to add a disposer method to the returned `Promise`.  This is useful if you wish to leverage [Bluebird's `using()` method](http://bluebirdjs.com/docs/api/disposer.html).
 
 ### `Pgconnector.errors`
 
